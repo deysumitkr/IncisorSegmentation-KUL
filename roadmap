@@ -1,4 +1,16 @@
-Function1: Alingment
-Input: [[list1],
-        [list2],....
-        ]
+def readata(image-list, tooth-list)
+return 2D mat [(no of images) x (no of tooth * landmark points per tooth)]
+
+module:
+align shapes
+PCA - P & b (std deviation) [gen model shapes]
+fitting [fitting results for original landmarks]
+gray level point detection [results taken on landmarks] + preprocessing
+
+
+module:
+pre-processing
+
+
+template matching
+
