@@ -11,6 +11,7 @@ import pca
 import modelFit
 import templateMatch
 import grayFit
+import reportPlots as rp
 
 LANDMARKS_PATH = './_Data/Landmarks/original/'
 IMAGES_PATH = './_Data/Radiographs/' 
@@ -47,7 +48,7 @@ def showLandmarks(images, landmarks, minimal = False):
 # minimal = False: Show images on matplotlib window
 
     for im in range(len(images)):
-        adj = '0' if i<10 else ''
+        adj = '0' if im<10 else ''
         img = cv2.imread(IMAGES_PATH+ adj +str(images[im])+'.tif')
         for i in range(0, len(landmarks[im]), 2):
             cv2.circle(img, (landmarks[im][i],landmarks[im][i+1]), 5, (0,230, 230), -1)
@@ -71,73 +72,92 @@ if __name__=='__main__':
 
     # settings
     images = range(1,11)
-    teeth = range(5,9)
+    teeth = range(1,9)
     
     imarr = readImages(images)
     landmarks = readLandmarks(images,teeth)
     #showLandmarks(images, landmarks, minimal=True)
 
+    #rp.main(imarr, landmarks)
+    #exit()
+
     testImage = 1
-    img = imarr[testImage].copy()
-    shape = landmarks[testImage]
+    #img = imarr[testImage].copy()
+    #shape = landmarks[testImage]
+
+    img = readImages([11])[0]
+    shape = readLandmarks([11], teeth)[0]
     
-    location = templateMatch.makeTemplates(img, imarr, readLandmarks(images,range(1,9)))
+    #location = templateMatch.makeTemplates(img, imarr, readLandmarks(images,range(1,9)))
     meanShape = np.mean(landmarks, axis=0)
-    grayFit.shiftLocation(meanShape, (location[0][0], location[0][1]+int(location[2]*0.25)))
+    #grayFit.shiftLocation(meanShape, (location[0][0], location[0][1]+int(location[2]*0.25)))
     
     
     print "Creating Gray Models..."
-    grayModels = grayFit.grayModels(imarr, landmarks, profileLength=20)
+    #grayModels = grayFit.grayModels(imarr, landmarks, profileLength=40)
     
     print "Creating shape models..."
     clandmarks = alignShape.alignShape(landmarks)
     vals, vecs = pca.pca(clandmarks)
    
-    img1 = img.copy()
-    for i in range(len(meanShape[::2])):
-        cv2.circle(img1, (int(meanShape[::2][i]), int(meanShape[1::2][i])), 14, (0,230, 230), 3)
-        cv2.circle(img1, (int(shape[::2][i]), int(shape[1::2][i])), 8, (0,230, 0), 3)
+    #img1 = img.copy()
+    #for i in range(len(meanShape[::2])):
+    #    cv2.circle(img1, (int(meanShape[::2][i]), int(meanShape[1::2][i])), 14, (0,230, 230), 3)
+    #    cv2.circle(img1, (int(shape[::2][i]), int(shape[1::2][i])), 8, (0,230, 0), 3)
     
-    modelShape = copy.copy(meanShape)
+    modelShape = copy.deepcopy(meanShape)
+    modelShape_tmp = np.mean(alignShape.alignShape([modelShape]*2), axis=0)
+    modelShape_tmp = modelFit.fit(shape, modelShape_tmp, vals, vecs)
+
+    print "\nMetric: Actual landmarks vs. Mean Shape" 
+    print "Mean squared error: ", mse(shape, modelShape)
+    print "Mean absolute error: ", mae(shape, modelShape)
+    print
+    print "Mean squared error: ", mse(shape, modelShape_tmp)
+    print "Mean absolute error: ", mae(shape, modelShape_tmp)
+
+    exit()
    
     for _ in range(2):
-        print "Gary Fit..."
-        newShape = grayFit.grayFitShape(img, modelShape, grayModels, profileLength=30, metric='min')
+
+        modelShape = [float(x) for x in modelShape]
+
+        print "Gray Fit..."
+        newShape = grayFit.grayFitShape(img, modelShape, grayModels, profileLength=80, metric='min')
         #grayFit.grayFitAll(imarr, landmarks)
+        print "Gray shape change: ", mse(newShape, modelShape)
 
-        img2 = img.copy()
-        for i in range(len(modelShape[::2])):
-            cv2.circle(img2, (int(modelShape[::2][i]), int(modelShape[1::2][i])), 12, (0,230, 0), 3)
-        for i in range(len(newShape[::2])):
-            cv2.circle(img2, (int(newShape[::2][i]), int(newShape[1::2][i])), 8, (250,30, 0), 3)
+        #img2 = img.copy()
+        #for i in range(len(modelShape[::2])):
+        #    cv2.circle(img2, (int(modelShape[::2][i]), int(modelShape[1::2][i])), 12, (0,230, 0), 3)
+        #for i in range(len(newShape[::2])):
+        #    cv2.circle(img2, (int(newShape[::2][i]), int(newShape[1::2][i])), 8, (250,30, 0), 3)
         
-        cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-        cv2.imshow('image',img2)
-        cv2.waitKey(0)
+        #cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+        #cv2.imshow('image',img2)
+        #cv2.waitKey(0)
 
-        print "\nMetric: model-shape " 
-        print "Mean squared error: ", mse(shape, modelShape)
-        print "Mean absolute error: ", mae(shape, modelShape)
-        print
 
         for _ in range(2):
             #print "Shape fitting..."
-            modelShape = np.mean(alignShape.alignShape([modelShape]*2), axis=0)
-            modelShape = modelFit.fit(newShape, modelShape, vals, vecs)
-            print "Mean squared error: ", mse(shape, modelShape)
+            modelShape_tmp = np.mean(alignShape.alignShape([modelShape]*2), axis=0)
+            modelShape_tmp = modelFit.fit(newShape, modelShape_tmp, vals, vecs)
         
-        print "\nMetric: model-shape " 
+        print "\nMetric: Shape Model vs. True shape " 
         print "Mean squared error: ", mse(shape, modelShape)
         print "Mean absolute error: ", mae(shape, modelShape)
+        print "\nShape Model Change: ", mae(modelShape_tmp, modelShape)
         print
 
-        img2 = img1.copy()
-        for i in range(len(modelShape[::2])):
-            cv2.circle(img2, (int(modelShape[::2][i]), int(modelShape[1::2][i])), 10, (0,30, 240), 3)
+        modelShape = modelShape_tmp
+
+        #img2 = img1.copy()
+        #for i in range(len(modelShape[::2])):
+        #    cv2.circle(img2, (int(modelShape[::2][i]), int(modelShape[1::2][i])), 10, (0,30, 240), 3)
         
-        cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-        cv2.imshow('image',img2)
-        cv2.waitKey(0)
+        #cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+        #cv2.imshow('image',img2)
+        #cv2.waitKey(0)
 
 
 

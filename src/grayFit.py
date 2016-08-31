@@ -2,6 +2,7 @@ import copy
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 
 def shiftLocation(shape, location):
 	mx = np.mean(shape[::2])
@@ -74,10 +75,9 @@ def grayModels(images, landmarks, profileLength=40):
 def grayFit(img, shape, grayMean, Sg, point=25, profileLength=80):
 	line = makeStrip(shape, point, profileLength)
 	grayStrip = getGrayStrip(img, line)
-	maxs = []; mins = []
 	Fgs = []
 	for i in range(len(grayStrip)-len(grayMean)+1):
-		segment = grayStrip[i:i+len(grayMean)]
+		segment = grayStrip[i:(i+len(grayMean))]
 		fgs = np.dot(np.subtract(segment, grayMean).T, np.linalg.pinv(Sg))
 		fgs = np.dot(fgs, np.subtract(segment, grayMean))
 		Fgs.append(fgs)
@@ -85,15 +85,24 @@ def grayFit(img, shape, grayMean, Sg, point=25, profileLength=80):
 
 
 def grayFitShape(img, shape, grayModels, profileLength=80, metric='min'):
-	newShape = copy.copy(shape)
+	newShape = [0]*len(shape)
 	for point in range(len(shape[::2])):
 		Fgs, line = grayFit(img, shape, grayModels[point][0], grayModels[point][1], point, profileLength)
 		if metric == 'min':
-			newShape[::2][point] = line[Fgs.index(min(Fgs))][0]
-			newShape[1::2][point] = line[Fgs.index(min(Fgs))][1]
+			x = line[Fgs.index(min(Fgs)) + (len(grayModels[point][0])/2)][0]
+			y = line[Fgs.index(min(Fgs)) + (len(grayModels[point][0])/2)][1]
 		else:
-			newShape[::2][point] = line[Fgs.index(max(Fgs))][0]
-			newShape[1::2][point] = line[Fgs.index(max(Fgs))][1]
+			x = line[Fgs.index(max(Fgs)) + (len(grayModels[point][0])/2)][0]
+			y = line[Fgs.index(max(Fgs)) + (len(grayModels[point][0])/2)][1]
+		newShape[point*2]=x
+		newShape[(point*2)+1]=y
+		
+	
+	#print "length of shape & newShape: ", len(shape), len(newShape)
+	#print "length of Fgs", len(Fgs)
+	#print "length of line", len(line)
+	#print "length of gray model: ", len(grayModels[0][0])
+	#print "derived length of Fgs: ", (2*profileLength+1) - len(grayModels[0][0]) + 1
 	return newShape
 
 

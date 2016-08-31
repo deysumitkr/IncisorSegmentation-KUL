@@ -1,7 +1,10 @@
+import copy
 import math
 import numpy as np
 import alignShape
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error as mse
+from sklearn.metrics import mean_absolute_error as mae
 
 def getTransformationMatrix(target, model):
 	#target = np.divide(target, np.linalg.norm(target)) # scale first shape to unit vector
@@ -20,7 +23,7 @@ def getTransformationMatrix(target, model):
 def limitB(b, eig_vals):
 	for i in range(len(b)):
 		lamb = abs(math.sqrt(eig_vals[i]))
-		if(abs(b[i]) > 3.0*lamb):
+		if(abs(b[i]) > 9.0*lamb):
 			b[i] = 3.0*lamb if(b[i]>0.0) else -3.0*lamb
 
 def plots(data, labels=[]):
@@ -31,7 +34,10 @@ def plots(data, labels=[]):
 		plt.plot(data[i][::2], data[i][1::2], label=l)
 	plt.gca().invert_yaxis()
 	plt.legend()
+	plt.grid(True)
+	plt.savefig('report/shapeFitting.png')
 	plt.show()
+		
 
 def translate(points, tx, ty):
 	points[::2] = points[::2]+tx
@@ -42,18 +48,30 @@ def fit(targetShape, meanShape, eig_vals, eig_vecs, comp=5):
 	b = np.array([0]*comp)
 	[tx, ty, cTargetShape] = alignShape.meanCentering([targetShape])
 
-	for _ in range(50):
+	allShapes = []
+	for _ in range(100):
 		modelShape = meanShape + np.dot(P, b)
 		target, T = getTransformationMatrix(cTargetShape[0], modelShape)
 		newTarget = alignShape.transform(np.linalg.pinv(T), target)
 		yNew = np.divide(newTarget, np.dot(newTarget, meanShape))
 		b = np.dot(np.array(P).T, yNew - meanShape)
 		limitB(b, eig_vals)
+		saveShape = alignShape.transform(T, modelShape) 
+		translate(saveShape, tx,ty)
+		allShapes.append(mse(saveShape, targetShape))
 
 	modelShape = meanShape + np.dot(P, b)
 	modelShape = alignShape.transform(T, modelShape) 
 	translate(modelShape, tx,ty)
-	#plots([meanShape, modelShape, cTargetShape[0], targetShape], labels=['meanShape', 'model fit','centered target', 'actual Target'])
+	plots([modelShape, targetShape], labels=['Model fit', 'Target Shape'])
+	plt.figure(4)
+	plt.plot(allShapes)
+	plt.xlabel('Iterations')
+	plt.ylabel('Mean Sqared Error')
+	plt.title('Convergence of model to the target shape')
+	plt.grid(True)
+	plt.savefig('report/shapeFitConvergence.png')
+	plt.show()
 	return modelShape
 
 
