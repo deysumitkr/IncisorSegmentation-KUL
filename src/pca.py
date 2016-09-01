@@ -12,13 +12,13 @@ def eigValsVecs(landmarks):
 	eig_vec = [v[1] for v in eig_pairs]
 	return eig_val, eig_vec
 
-def plotEigenValues(vals, comp=10):
+def plotEigenValues(vals, comp=10, teeth=8, UD=''):
 	plt.figure(1)
-	plt.plot(vals[:10], range(1,comp+1))
+	plt.plot(range(1,comp+1), vals[:comp])
 	plt.grid(True)
 	plt.title('Eigenvalues'.format(comp))
-	plt.ylabel('Number of Components')
-	plt.savefig('report/eigenValues.png')
+	plt.xlabel('Number of Components')
+	plt.savefig('report/eigenValues{0}{1}.png'.format(teeth, UD))
 	
 	cum_val = [0]
 	for v in vals:
@@ -27,31 +27,32 @@ def plotEigenValues(vals, comp=10):
 	cum_val = np.divide(cum_val, cum_val[-1])
 	
 	plt.figure(2)
-	plt.plot(cum_val[:comp])
+	plt.plot(range(1, comp+1), cum_val[:comp])
 	plt.grid(True)
 	plt.title('Normalized cumulative sum of eigen values')
-	plt.ylabel('Number of Components')
-	plt.savefig('report/cumEigenValues.png')
+	plt.xlabel('Number of Components')
+	plt.savefig('report/cumEigenValues{0}{1}.png'.format(teeth, UD))
 	plt.show()
 
-def showShapeVariations(landmarks, P, b, comp=3):
+def showShapeVariations(landmarks, P, b, comp=3, UD=''):
 	meanShape = np.mean(landmarks, axis=0)
 	P = np.array(P[:comp]).T; b = np.array(b[:comp])
 	f, sp = plt.subplots(comp, 3)
 	for i in range(comp):
 		for k in [-1.,0.,1.]:
 			bNew = [0]*comp
-			bNew[i] = k*math.sqrt(b[i])
+			bNew[i] = (3.*k)*math.sqrt(b[i])
 			shape = meanShape + np.dot(P,bNew)
+			k = int(k)
 			sp[i,k+1].plot(shape[::2], shape[1::2])
-			sp[i,k+1].set_title('b[{0}] = {1}*sqrt(lamda)'.format(i,int(k)))
+			sp[i,k+1].set_title('b[{0}] = {1}*sqrt(lamda)'.format(i,int(k)*3))
 			sp[i,k+1].invert_yaxis()
 			sp[i,k+1].axes.get_xaxis().set_visible(False)
-	plt.savefig('report/shapeVariations.png'.format(i, int(k)))
+	plt.savefig('report/shapeVariations{0}_{1}{2}.png'.format(comp, len(meanShape)/80, UD))
 	plt.show()
 
 def pca(landmarks):
 	vals, vecs = eigValsVecs(landmarks)
-	#plotEigenValues(vals)
-	#showShapeVariations(landmarks, vecs, vals, comp=4)
+	#plotEigenValues(vals, teeth=len(landmarks[0])/80, UD='*')
+	#showShapeVariations(landmarks, vecs, vals, comp=3, UD='*')
 	return vals, vecs

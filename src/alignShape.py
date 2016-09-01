@@ -45,11 +45,27 @@ def scaleRotate(landmarks):
 		landmarks[j] = transform(T, landmarks[j])
 	return landmarks
 
-def alignShape(landmarks):
+def alignShape(landmarks, plot=False):
 	[mx, my, cLandmarks] = meanCentering(landmarks)
-	cLandmarks = scaleRotate(cLandmarks)
+	#cLandmarks = scaleRotate(cLandmarks)
+	error = [abs(mx) + abs(my)]
 	while (abs(mx) + abs(my))>0.0001:
-		[mx, my, cLandmarks] = meanCentering(cLandmarks)
+	#for _ in range(5):
 		cLandmarks = scaleRotate(cLandmarks)
+		[mx, my, cLandmarks] = meanCentering(cLandmarks)
+		error.append(abs(mx) + abs(my))
+	
+	if plot:
+		print error
+		plt.plot(range(1,len(error)+1), error)
+		plt.ylim([min(error)-100, max(error)+100])
+		plt.xlim([0,len(error)+1])
+		plt.ylabel('Manhattan Distance of Mean Shift')
+		plt.xlabel('Number of Iterations')
+		plt.title('Convergence of Shape Alignment')
+		plt.grid(True)
+		plt.savefig('report/convergeShapeAlignment.png')
+		plt.show()
+
 	return cLandmarks
 	

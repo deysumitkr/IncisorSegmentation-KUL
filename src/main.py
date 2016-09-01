@@ -72,21 +72,21 @@ if __name__=='__main__':
 
     # settings
     images = range(1,11)
-    teeth = range(1,9)
+    teeth = range(5,9)
     
     imarr = readImages(images)
     landmarks = readLandmarks(images,teeth)
     #showLandmarks(images, landmarks, minimal=True)
 
-    #rp.main(imarr, landmarks)
-    #exit()
+    rp.main(imarr, landmarks)
+    exit()
 
-    testImage = 1
+    testImage = 11
     #img = imarr[testImage].copy()
     #shape = landmarks[testImage]
 
-    img = readImages([11])[0]
-    shape = readLandmarks([11], teeth)[0]
+    img = readImages([testImage])[0]
+    shape = readLandmarks([testImage], teeth)[0]
     
     #location = templateMatch.makeTemplates(img, imarr, readLandmarks(images,range(1,9)))
     meanShape = np.mean(landmarks, axis=0)
@@ -100,11 +100,6 @@ if __name__=='__main__':
     clandmarks = alignShape.alignShape(landmarks)
     vals, vecs = pca.pca(clandmarks)
    
-    #img1 = img.copy()
-    #for i in range(len(meanShape[::2])):
-    #    cv2.circle(img1, (int(meanShape[::2][i]), int(meanShape[1::2][i])), 14, (0,230, 230), 3)
-    #    cv2.circle(img1, (int(shape[::2][i]), int(shape[1::2][i])), 8, (0,230, 0), 3)
-    
     modelShape = copy.deepcopy(meanShape)
     modelShape_tmp = np.mean(alignShape.alignShape([modelShape]*2), axis=0)
     modelShape_tmp = modelFit.fit(shape, modelShape_tmp, vals, vecs)

@@ -1,16 +1,88 @@
-def readata(image-list, tooth-list)
-return 2D mat [(no of images) x (no of tooth * landmark points per tooth)]
+============= Centering and Normalizing ===============
 
-module:
-align shapes
-PCA - P & b (std deviation) [gen model shapes]
-fitting [fitting results for original landmarks]
-gray level point detection [results taken on landmarks] + preprocessing
+[1 Example Shape]
+	Landmarks on an Image
+	Centered Landmarks
+	Normalized Landmarks
+
+=================== Procrustes Analysis ===============
+
+[Few Examples to make a point]
+Alignment of Shapes (Procrustes Analysis) [Before alignment & After ALignment]
+
+? Different Initialization shape for Procrustes Analysis
+
+Convergence of Shape Alignemnt(Training shapes) [error vs. iterations]
 
 
-module:
-pre-processing
+========================= PCA ==========================
+
+[8 Teeth]
+	Eigen values - decreasing graph
+	Cummulative Eigen Values - saturating graph
+	Shape Variations - changes in b
+
+[4 Top Teeth]
+	Eigen values - decreasing graph
+	Cummulative Eigen Values - saturating graph
+	Shape Variations - changes in b
+
+[4 Bottom Teeth]
+	Eigen values - decreasing graph
+	Cummulative Eigen Values - saturating graph
+	Shape Variations - changes in b
+
+=================== Model Fitting ======================
+
+[8 Teeth]
+[4 Top Teeth]
+[4 Bottom Teeth]
+	On a Test image
+	Initial Model for Fitting with mse
+	Final Model For Fitting with mse (Constrained b)
+	? Final Model For Fitting with mse (unconstrained b)
+	Convergence of Model Fit (mse vs. iterations)
 
 
-template matching
+============= Gray Profile Fittings ====================
+
+[4 Top Teeth]
+[4 Bottom Teeth]
+
+	[without preprocessing]
+	Gray profiles plot
+	Gray Profile Match positions (on test set)
+	Gray profile match position hist distributions (for different profile lengths) (on test set)
+
+	[with preprocessing] - Edges
+	Gray Profiles Plot
+	Gray Profile Match positions (on training set)
+	Gray profile match position hist distributions (for different profile lengths) (on training set)
+
+
+=============== Template Matching ======================
+
+[8 Teeth]
+[4 Top Teeth]
+[4 Bottom Teeth]
+	[Without preprocessing]
+	Template
+	One Match
+	One missmatch
+
+	[With preprocessing]
+	Template
+	One Match
+	One missmatch
+
+
+================== Final Test ==========================
+
+[8 Teeth]
+[4 Top Teeth]
+[4 Bottom Teeth]
+	Fit results on Image + mse
+	Convergence (mse vs. Iterations)
+
+========================================================
 
