@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 import preprocess as pp
 
 def crop(extremes, imgs):
@@ -42,12 +43,22 @@ def makeTemplates(img, imgs, landmarks):
     bottom_right = (top_left[0] + W, top_left[1] + H)
 
     #return [(top_left[0] + int(W/2.0), top_left[1] + int(H*0.25)), (top_left[0] + int(W/2.0), top_left[1] + int(H*0.5)), (top_left[0] + int(W/2.0), top_left[1] + int(H*0.75))]
-    return [(top_left[0] + int(W/2.0), top_left[1] + int(H/2.0)), W, H]
+    #return [(top_left[0] + int(W/2.0), top_left[1] + int(H/2.0)), W, H]
 
+    
     cv2.rectangle(img,top_left, bottom_right, (0,255,0), 2)
+    
+    plt.imshow(meanTemp, interpolation = 'bicubic')
+    plt.savefig('report/template_test{0}.png'.format(''))
+    
+    plt.imshow(img, interpolation = 'bicubic')
+    plt.savefig('report/templateMatch{0}.png'.format(''))
+    plt.show()
+    
+    """
     cv2.namedWindow('template', cv2.WINDOW_NORMAL)
     cv2.imshow('template', meanTemp)
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     cv2.imshow('image', img)
     cv2.waitKey(0)
-
+    """

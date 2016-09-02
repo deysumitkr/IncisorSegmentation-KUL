@@ -220,7 +220,7 @@ def process(images):
 def main(imarr, landmarks):
     """
     ID=6
-    testImgs =[4]
+    testImgs =[9]
     teeth = range(1,9)
     trainImages = range(1,15)
     trainImages.remove(testImgs[0])
@@ -263,4 +263,3 @@ def main(imarr, landmarks):
             testImages = readImages(testImgs)
             testShapes = readLandmarks(testImgs, teeth)
             finalResults(trainImages, imarr, landmarks, testImages[0], testShapes[0], testImgs[0], sec)
-
